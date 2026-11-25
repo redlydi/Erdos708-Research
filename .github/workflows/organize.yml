@@ -1,97 +1,54 @@
-name: Organize Erdos 708 research
+name: Organize research files
 
 on:
   workflow_dispatch:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   organize:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: main
 
-      - name: Organize research files
-        shell: bash
+      - name: Organize files
         run: |
           set -euo pipefail
 
-          python3 - <<'PY'
-          from pathlib import Path
-          import shutil
+          mkdir -p reports code verification
 
-          mapping = {
-              "REPORT.md": "reports/REPORT.md",
-              "check.py": "code/check.py",
-              "archive_g3.py": "code/archive_g3.py",
-              "archive_repetitions.py":
-                  "code/archive_repetitions.py",
-              "check_output.txt":
-                  "verification/check_output.txt",
-              "archive_g3_output.txt":
-                  "verification/archive_g3_output.txt",
-              "archive_repetitions_output.txt":
-                  "verification/archive_repetitions_output.txt",
+          move_file() {
+            if [ -f "$1" ]; then
+              if [ -e "$2" ]; then
+                echo "Conflict: $2 already exists"
+                exit 1
+              fi
+              git mv "$1" "$2"
+            fi
           }
 
-          for source, destination in mapping.items():
-              src = Path(source)
-              dst = Path(destination)
+          move_file REPORT.md reports/REPORT.md
 
-              if not src.exists():
-                  if dst.exists():
-                      print(f"Already organized: {dst}")
-                  else:
-                      print(f"Missing: {src}")
-                  continue
+          move_file check.py code/check.py
+          move_file archive_g3.py code/archive_g3.py
+          move_file archive_repetitions.py code/archive_repetitions.py
 
-              if dst.exists():
-                  raise RuntimeError(
-                      f"Destination already exists: {dst}"
-                  )
+          move_file check_output.txt verification/check_output.txt
+          move_file archive_g3_output.txt verification/archive_g3_output.txt
+          move_file archive_repetitions_output.txt verification/archive_repetitions_output.txt
 
-              dst.parent.mkdir(
-                  parents=True,
-                  exist_ok=True
-              )
-
-              shutil.move(str(src), str(dst))
-              print(f"Moved: {src} -> {dst}")
-
-          print("Organization completed")
-          PY
-
-      - name: Validate Python syntax
-        shell: bash
+      - name: Save changes
         run: |
-          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          if [ -d code ]; then
-            python3 -m compileall -q code
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+          else
+            git commit -m "Organize research repository"
+            git push origin HEAD:main
           fi
-
-      - name: Show proposed changes
-        shell: bash
-        run: |
-          git status --short
-
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          branch: automation/organize-research
-          delete-branch: true
-          commit-message: Organize research files
-          title: Organize Erdos 708 research files
-          body: |
-            Organizes research materials into:
-            - reports/
-            - code/
-            - verification/
-
-            Preserves original file contents.
-
-            Does not remove README.md or research data.
