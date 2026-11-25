@@ -42,9 +42,7 @@ $$
 
 For an integer $q\ge2$ and a finite set $X$, define
 
-$$
-C_X(q)=\#\{a\in X:q\mid a\}.
-$$
+
 
 A subset $B\subseteq I$ is a **prime-power cover** of $A$ when
 
@@ -74,7 +72,11 @@ For each fixed $\varepsilon>0$, the project proposes that some $c_\varepsilon>0$
 
 $$
 M\ge n^{3/2+\varepsilon}
-\quad\Longrightarrow\quad
+\quad\L$$
+C_X(q)=\#\{a\in X:q\mid a\}.
+$$
+
+ongrightarrow\quad
 H(A,I)\le2n+O_\varepsilon(n^{1-c_\varepsilon})
 $$
 
