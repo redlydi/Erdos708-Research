@@ -1,0 +1,1 @@
+250 small comparisons; 4 for triangle; []

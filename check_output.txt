@@ -1,0 +1,4 @@
+160 layer-support covers: divisibility and charge antichains verified
+75 coprime-core covers with repeated primes: divisibility and 2n-1 verified
+75 overlapping-core samples: global match found and 2n-1 verified
+2-cycle at 210 verified (local obstruction only)

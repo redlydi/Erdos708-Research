@@ -1,0 +1,4 @@
+finite certificate: 58253 subsets, 752 blocks, max score 256205/271524
+layer certificate: 99125 subsets, 7380 block checks, max score 395107450410/412896151483
+constructive checks: 250 variable-exponent families
+constructive checks: 500 rank-three, 200 prime-power pivot families
