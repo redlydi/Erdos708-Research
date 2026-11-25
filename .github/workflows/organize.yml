@@ -1,0 +1,97 @@
+name: Organize Erdos 708 research
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  organize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Organize research files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+
+          mapping = {
+              "REPORT.md": "reports/REPORT.md",
+              "check.py": "code/check.py",
+              "archive_g3.py": "code/archive_g3.py",
+              "archive_repetitions.py":
+                  "code/archive_repetitions.py",
+              "check_output.txt":
+                  "verification/check_output.txt",
+              "archive_g3_output.txt":
+                  "verification/archive_g3_output.txt",
+              "archive_repetitions_output.txt":
+                  "verification/archive_repetitions_output.txt",
+          }
+
+          for source, destination in mapping.items():
+              src = Path(source)
+              dst = Path(destination)
+
+              if not src.exists():
+                  if dst.exists():
+                      print(f"Already organized: {dst}")
+                  else:
+                      print(f"Missing: {src}")
+                  continue
+
+              if dst.exists():
+                  raise RuntimeError(
+                      f"Destination already exists: {dst}"
+                  )
+
+              dst.parent.mkdir(
+                  parents=True,
+                  exist_ok=True
+              )
+
+              shutil.move(str(src), str(dst))
+              print(f"Moved: {src} -> {dst}")
+
+          print("Organization completed")
+          PY
+
+      - name: Validate Python syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -d code ]; then
+            python3 -m compileall -q code
+          fi
+
+      - name: Show proposed changes
+        shell: bash
+        run: |
+          git status --short
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: automation/organize-research
+          delete-branch: true
+          commit-message: Organize research files
+          title: Organize Erdos 708 research files
+          body: |
+            Organizes research materials into:
+            - reports/
+            - code/
+            - verification/
+
+            Preserves original file contents.
+
+            Does not remove README.md or research data.
